@@ -1,0 +1,268 @@
+import sys
+import os
+from PyQt6.QtPrintSupport import QPrinter
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
+from PyQt6.QtGui import QFontDatabase, QCloseEvent, QPainter, QPageSize, QPageLayout
+from PyQt6.QtCore import Qt, QRectF, QMarginsF
+from ui_paper import Workspace
+from ui_menu import EditorMenuBar
+from ui_toolbar import EditorToolBar
+from ui_footer import EditorFooterBar
+from ui_navigator import SceneNavigator 
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.base_title = "İsimsiz.fountain"
+        self.is_saved = True 
+        
+        self.resize(1100, 800)
+
+        self.workspace = Workspace()
+        self.setCentralWidget(self.workspace)
+        
+        # --- UÇAN PANEL (OVERLAY) EKLENDİ ---
+        self.navigator = SceneNavigator(self.workspace, self.workspace)
+        self.navigator.hide() 
+        # ------------------------------------------
+        
+        editor_reference = self.workspace
+
+        self.menu_bar = EditorMenuBar(self, editor_reference)
+        self.setMenuBar(self.menu_bar)
+
+        self.toolbar = EditorToolBar(self, editor_reference)
+        self.addToolBar(self.toolbar)
+
+        self.footer = EditorFooterBar(self, editor_reference)
+        self.setStatusBar(self.footer)
+
+        self.footer.zoom_requested.connect(self.workspace.set_zoom)
+
+        self.current_file_path = None  
+        self.update_window_title()
+
+    def toggle_navigator(self):
+        if self.navigator.isVisible():
+            self.navigator.hide()
+        else:
+            self.navigator.show()
+
+    def resizeEvent(self, event: QCloseEvent):
+        super().resizeEvent(event)
+        if hasattr(self, 'navigator') and self.workspace:
+            self.navigator.setGeometry(0, 0, self.navigator.width(), self.workspace.height())
+
+    def update_window_title(self):
+        prefix = "*" if not self.is_saved else ""
+        self.setWindowTitle(f"{prefix}{self.base_title} - Fountext Editor v1.0")
+
+    def mark_unsaved(self):
+        if self.is_saved:
+            self.is_saved = False
+            self.update_window_title()
+            self.footer.set_saved_status(False)
+
+    def mark_saved(self):
+        self.is_saved = True
+        self.update_window_title()
+        self.footer.set_saved_status(True)
+
+    def check_unsaved_changes(self):
+        if self.is_saved:
+            return True
+            
+        reply = QMessageBox.warning(
+            self, 'Kaydedilmemiş Değişiklikler',
+            f"'{self.base_title}' belgesinde kaydedilmemiş değişiklikler var.\nKaydetmek ister misiniz?",
+            QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Save
+        )
+
+        if reply == QMessageBox.StandardButton.Save:
+            return self.save_file()
+        elif reply == QMessageBox.StandardButton.Discard:
+            return True
+        else:
+            return False
+
+    def closeEvent(self, event: QCloseEvent):
+        if self.check_unsaved_changes():
+            event.accept()
+        else:
+            event.ignore()
+
+    def new_file(self):
+        if not self.check_unsaved_changes():
+            return
+
+        self.workspace.hidden_editor.blockSignals(True)
+        self.workspace.hidden_editor.clear()
+        self.workspace.raw_text = ""
+        self.workspace.title_text = "Title: [SENARYO ADI]\nCredit: Yazan\nAuthor: [İsim Soyisim]\nDate: 10 Nisan 2026\nCopyright: (c) 2026\nWatermark: \nContact: \nTelefon Numarası\nE-Posta Adresi\n\n"
+        self.workspace.hidden_editor.blockSignals(False)
+
+        self.current_file_path = None
+        self.base_title = "İsimsiz.fountain"
+        self.workspace.update_layout()
+        
+        self.mark_saved()
+        print("Yeni dosya açıldı.")
+
+    def open_file(self):
+        if not self.check_unsaved_changes():
+            return
+
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Fountain Dosyası Aç", "", "Fountain Dosyaları (*.fountain);;Tüm Dosyalar (*)"
+        )
+        
+        if file_path:
+            try:
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    content = file.read().replace('\r\n', '\n').replace('\r', '').replace('\t', '   ')
+                
+                lines = content.split('\n')
+                title_lines = []
+                script_lines = []
+                in_title = True
+                has_title_data = False
+
+                for line in lines:
+                    if in_title:
+                        if line.strip() == "":
+                            if has_title_data:
+                                in_title = False 
+                            else:
+                                title_lines.append(line)
+                        elif ":" in line and line.find(":") < 15:
+                            has_title_data = True
+                            title_lines.append(line)
+                        elif has_title_data:
+                            title_lines.append(line)
+                        else:
+                            in_title = False
+                            script_lines.append(line)
+                    else:
+                        script_lines.append(line)
+
+                self.workspace.hidden_editor.blockSignals(True) 
+                if not has_title_data:
+                    self.workspace.title_text = ""
+                    self.workspace.hidden_editor.setPlainText(content)
+                else:
+                    self.workspace.title_text = "\n".join(title_lines) + "\n\n"
+                    self.workspace.hidden_editor.setPlainText("\n".join(script_lines))
+                self.workspace.hidden_editor.blockSignals(False)
+                
+                self.current_file_path = file_path
+                self.base_title = os.path.basename(file_path)
+                
+                self.workspace._sync_text() 
+                self.mark_saved() 
+                
+                print(f"Dosya açıldı: {file_path}")
+            except Exception as e:
+                QMessageBox.critical(self, "Hata", f"Dosya açılamadı:\n{str(e)}")
+
+    def save_file(self):
+        if not self.current_file_path:
+            self.current_file_path, _ = QFileDialog.getSaveFileName(
+                self, "Fountain Kaydet", "", "Fountain Dosyaları (*.fountain)"
+            )
+
+        if self.current_file_path:
+            try:
+                if not self.current_file_path.endswith('.fountain'):
+                    self.current_file_path += '.fountain'
+
+                with open(self.current_file_path, 'w', encoding='utf-8') as file:
+                    file.write(self.workspace.title_text + self.workspace.raw_text)
+                
+                self.base_title = os.path.basename(self.current_file_path)
+                self.mark_saved() 
+                
+                print(f"Başarıyla kaydedildi: {self.current_file_path}")
+                return True
+            except Exception as e:
+                QMessageBox.critical(self, "Hata", f"Dosya kaydedilemedi:\n{str(e)}")
+                return False
+        return False 
+
+    def export_pdf(self):
+        default_name = self.base_title.replace('.fountain', '') + ".pdf"
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "PDF Olarak Dışa Aktar", default_name, "PDF Dosyaları (*.pdf)"
+        )
+
+        if not file_path:
+            return
+
+        try:
+            # --- YENİ: PDF Çıktısı Almadan Önce İmleci Gizle ve Durdur ---
+            if self.workspace.cursor_item:
+                self.workspace.cursor_timer.stop()
+                self.workspace.cursor_item.setVisible(False)
+            # -------------------------------------------------------------
+
+            printer = QPrinter(QPrinter.PrinterMode.HighResolution)
+            printer.setOutputFormat(QPrinter.OutputFormat.PdfFormat)
+            printer.setOutputFileName(file_path)
+            
+            printer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
+            
+            layout = printer.pageLayout()
+            layout.setMargins(QMarginsF(0, 0, 0, 0))
+            printer.setPageLayout(layout)
+
+            painter = QPainter(printer)
+            
+            engine = self.workspace.engine
+            page_height = engine.page_height
+            page_width = engine.page_width
+            spacing = 50 
+            
+            full_text = self.workspace.title_text + self.workspace.raw_text
+            pages = engine.paginate_text(full_text)
+            total_pages = len(pages)
+
+            for i in range(total_pages):
+                if i > 0:
+                    printer.newPage() 
+                    
+                y_offset = i * (page_height + spacing)
+                source_rect = QRectF(0, y_offset, page_width, page_height)
+                
+                target_rect = QRectF(0, 0, printer.width(), printer.height())
+                
+                self.workspace.scene.render(painter, target_rect, source_rect)
+
+            painter.end()
+
+            # --- YENİ: PDF Çıktısı Bittikten Sonra İmleci Geri Getir ---
+            if self.workspace.cursor_item:
+                self.workspace.cursor_item.setVisible(True)
+                self.workspace.cursor_timer.start(500)
+            # -----------------------------------------------------------
+
+            QMessageBox.information(self, "Başarılı", f"PDF başarıyla oluşturuldu:\n{file_path}")
+            
+        except Exception as e:
+            # Hata durumunda da imleci geri getirmeyi unutmuyoruz ki editör donup kalmasın
+            if self.workspace.cursor_item:
+                self.workspace.cursor_item.setVisible(True)
+                self.workspace.cursor_timer.start(500)
+                
+            QMessageBox.critical(self, "Hata", f"PDF oluşturulurken bir hata meydana geldi:\n{str(e)}") 
+    
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    
+    QFontDatabase.addApplicationFont("assets/fonts/CourierPrime-Regular.ttf")
+    QFontDatabase.addApplicationFont("assets/fonts/CourierPrime-Bold.ttf")
+    QFontDatabase.addApplicationFont("assets/fonts/CourierPrime-Italic.ttf")
+    
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())
