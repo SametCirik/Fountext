@@ -1,0 +1,55 @@
+Title: Fountext User Guide
+Title: -
+Credit: Written and Developed by
+Author: Samet CIRIK
+Date: Apr 15 2026
+Copyright: (C) 2026, Samet CIRIK
+Watermark: INFORMATION
+Contact:
+    GITHUB - github.com/SametCirik/Fountext
+
+INT. FOUNTEXT EDITOR - DAY
+
+Welcome to Fountext! This document was created for you to experience both the basics of the Fountain screenplay format and the awesome features this editor offers.
+
+Right now, click on this icon at the top left of the screen: 
+
+SCENES [☰]
+
+The floating panel that opens will list all the locations in your script. When you click on one, the paper will glide smoothly to that exact scene.
+
+EXT. SCENE HEADINGS - NIGHT
+
+Scene headings start with classic abbreviations like "INT.", "EXT.", "INT/EXT.", and "I/E.". Fountext automatically renders scene headings in a **bold** font for you in the background, just like this line. 
+
+Character names are always written in ALL CAPS. Fountext also automatically bolds character names to make it easier to scan for dialogue on the page.
+
+WRITER
+(Excitedly)
+I'm just typing plain text without using any formatting buttons, and everything is aligning perfectly to the American industry standard!
+
+DEVELOPER
+(Smiling)
+Absolutely! Our custom C++ typesetting engine running in the background calculates the millimeter-perfect position of every letter dozens of times a second as you type.
+
+To go back to writing action after dialogue, all you have to do is press Enter twice and start your sentence. The text will snap right back to the left margin.
+
+FADE TO:
+
+INT/EXT. PDF EXPORT AND TITLE PAGE - DAY
+
+As you can see, hybrid location uses like "INT/EXT." are also seamlessly detected and bolded.
+
+You can instantly create your script's title page by clicking on the very top of the paper (Page 1) or by typing tags like "Title:", "Author:" at the beginning of your text. Fountext clears these tags from the screen and aligns them sharply right in the dead center of the cover.
+
+WRITER
+So, how do I export this masterpiece?
+
+DEVELOPER
+To get an industry-standard, text-selectable, vector PDF, simply click on File > Export as PDF from the top menu. Or, you can just use the CTRL + E shortcut.
+
+If you glance at the footer in the bottom right corner while navigating the page, you can instantly track your current page, total page count, and character count.
+
+Happy writing!
+
+CUT TO:
