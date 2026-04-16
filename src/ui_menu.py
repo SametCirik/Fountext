@@ -31,9 +31,22 @@ class EditorMenuBar(QMenuBar):
         export_pdf_action.setShortcut("Ctrl+E")
         export_pdf_action.triggered.connect(self.main_window.export_pdf)
         file_menu.addAction(export_pdf_action)
+        # -----------------------------------.
+
+        file_menu.addSeparator()
+
+        # --- YENİ: Ana Menüye Dön Butonu ---
+        home_action = QAction("Ana Menü'ye Dön", self)
+        home_action.setShortcut("Ctrl+H")
+        home_action.triggered.connect(self.main_window.show_home_screen)
+        file_menu.addAction(home_action)
         # -----------------------------------
 
         file_menu.addSeparator()
+
+        exit_action = QAction("Çıkış", self)
+        exit_action.setShortcut("Ctrl+Q")
+        # ...
 
         exit_action = QAction("Çıkış", self)
         exit_action.setShortcut("Ctrl+Q")

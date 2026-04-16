@@ -1,31 +1,62 @@
 import sys
 import os
+import hashlib
+import json
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox, QStackedWidget
 from PyQt6.QtPrintSupport import QPrinter
-from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
-from PyQt6.QtGui import QFontDatabase, QCloseEvent, QPainter, QPageSize, QPageLayout
+from PyQt6.QtGui import QFontDatabase, QCloseEvent, QPainter, QPageSize, QPageLayout, QPixmap
 from PyQt6.QtCore import Qt, QRectF, QMarginsF
+
 from ui_paper import Workspace
 from ui_menu import EditorMenuBar
 from ui_toolbar import EditorToolBar
 from ui_footer import EditorFooterBar
 from ui_navigator import SceneNavigator 
+from ui_home import HomeMenu, DATA_DIR
+from ui_projects import ProjectDashboard
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.base_title = "İsimsiz.fountain"
+        self.base_title = "Fountext"
         self.is_saved = True 
-        
         self.resize(1100, 800)
 
-        self.workspace = Workspace()
-        self.setCentralWidget(self.workspace)
+        self.stacked_widget = QStackedWidget()
+        self.setCentralWidget(self.stacked_widget)
+
+        # ==========================================
+        # EKRAN 0: Ana Menü
+        # ==========================================
+        self.home_menu = HomeMenu()
         
-        # --- UÇAN PANEL (OVERLAY) EKLENDİ ---
+        self.home_menu.open_project_requested.connect(self.open_file_from_path)
+        self.home_menu.new_project_requested.connect(self.new_file)
+        self.home_menu.browse_project_requested.connect(self.open_file)
+        
+        self.home_menu.create_folder_requested.connect(self.create_project_folder)
+        self.home_menu.open_folder_requested.connect(self.open_project_dashboard)
+
+        self.stacked_widget.addWidget(self.home_menu)
+
+        # ==========================================
+        # EKRAN 1: Çalışma Alanı (Editör)
+        # ==========================================
+        self.workspace = Workspace()
+        self.stacked_widget.addWidget(self.workspace)
+        
+        # ==========================================
+        # EKRAN 2: Proje Yönetim Paneli
+        # ==========================================
+        self.project_dashboard = ProjectDashboard()
+        self.project_dashboard.back_requested.connect(self.show_home_screen)
+        self.project_dashboard.open_episode_requested.connect(self.open_file_from_path)
+        
+        self.stacked_widget.addWidget(self.project_dashboard)
+
         self.navigator = SceneNavigator(self.workspace, self.workspace)
         self.navigator.hide() 
-        # ------------------------------------------
         
         editor_reference = self.workspace
 
@@ -41,7 +72,44 @@ class MainWindow(QMainWindow):
         self.footer.zoom_requested.connect(self.workspace.set_zoom)
 
         self.current_file_path = None  
-        self.update_window_title()
+        
+        self.show_home_screen()
+
+    # --- PROJE KAYIT (REGISTRY) SİSTEMİ ---
+    def register_project(self, folder_path):
+        """Projenin yolunu Fountext'in genel proje listesine kaydeder."""
+        projects_file = "user_data/projects.json"
+        if not os.path.exists("user_data"):
+            os.makedirs("user_data")
+            
+        projects = []
+        if os.path.exists(projects_file):
+            with open(projects_file, 'r', encoding='utf-8') as f:
+                try:
+                    projects = json.load(f)
+                except:
+                    pass
+                    
+        if folder_path not in projects:
+            projects.append(folder_path)
+            with open(projects_file, 'w', encoding='utf-8') as f:
+                json.dump(projects, f, ensure_ascii=False, indent=4)
+
+    def open_project_dashboard(self, folder_path=None):
+        if not folder_path:
+            folder_path = QFileDialog.getExistingDirectory(self, "Fountext Proje Klasörünü Seç")
+            
+        if folder_path:
+            self.register_project(folder_path) # Yeni projeyi JSON'a ekle
+            self.project_dashboard.load_project(folder_path)
+            self.stacked_widget.setCurrentIndex(2)
+
+    def create_project_folder(self):
+        folder_path = QFileDialog.getExistingDirectory(self, "Yeni Proje İçin Boş Bir Klasör Seç")
+        if folder_path:
+            self.open_project_dashboard(folder_path)
+
+    # --- PENCERE VE EKRAN YÖNETİM FONKSİYONLARI ---
 
     def toggle_navigator(self):
         if self.navigator.isVisible():
@@ -57,6 +125,139 @@ class MainWindow(QMainWindow):
     def update_window_title(self):
         prefix = "*" if not self.is_saved else ""
         self.setWindowTitle(f"{prefix}{self.base_title} - Fountext Editor v1.0")
+
+    def show_home_screen(self):
+        self.stacked_widget.setCurrentIndex(0)
+        self.menu_bar.hide()
+        self.toolbar.hide()
+        self.footer.hide()
+        if self.navigator.isVisible():
+            self.navigator.hide()
+        self.home_menu.load_projects() 
+        self.setWindowTitle("Fountext - Ana Menü")
+
+    def show_editor_screen(self):
+        self.stacked_widget.setCurrentIndex(1)
+        self.menu_bar.show()
+        self.toolbar.show()
+        self.footer.show()
+        self.update_window_title()
+
+    # --- DOSYA İŞLEMLERİ (AÇMA / YÜKLEME) ---
+
+    def open_file_from_path(self, path):
+        if self._load_file(path):
+            self.show_editor_screen()
+
+    def _load_file(self, file_path):
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                content = file.read().replace('\r\n', '\n').replace('\r', '').replace('\t', '   ')
+            
+            lines = content.split('\n')
+            title_lines = []
+            script_lines = []
+            in_title = True
+            has_title_data = False
+
+            for line in lines:
+                if in_title:
+                    if line.strip() == "":
+                        if has_title_data:
+                            in_title = False 
+                        else:
+                            title_lines.append(line)
+                    elif ":" in line and line.find(":") < 15:
+                        has_title_data = True
+                        title_lines.append(line)
+                    elif has_title_data:
+                        title_lines.append(line)
+                    else:
+                        in_title = False
+                        script_lines.append(line)
+                else:
+                    script_lines.append(line)
+
+            self.workspace.hidden_editor.blockSignals(True) 
+            if not has_title_data:
+                self.workspace.title_text = ""
+                self.workspace.hidden_editor.setPlainText(content)
+            else:
+                self.workspace.title_text = "\n".join(title_lines) + "\n\n"
+                self.workspace.hidden_editor.setPlainText("\n".join(script_lines))
+            self.workspace.hidden_editor.blockSignals(False)
+            
+            self.current_file_path = file_path
+            self.base_title = os.path.basename(file_path)
+            
+            self.workspace._sync_text() 
+            self.mark_saved() 
+            
+            print(f"Dosya açıldı: {file_path}")
+            return True
+        except Exception as e:
+            QMessageBox.critical(self, "Hata", f"Dosya açılamadı:\n{str(e)}")
+            return False
+
+    def new_file(self):
+        if not self.check_unsaved_changes():
+            return
+
+        self.workspace.hidden_editor.blockSignals(True)
+        self.workspace.hidden_editor.clear()
+        self.workspace.raw_text = ""
+        self.workspace.title_text = "Title: [SENARYO ADI]\nCredit: Yazan\nAuthor: [İsim Soyisim]\nDate: 10 Nisan 2026\nCopyright: (c) 2026\nWatermark: \nContact: \nTelefon Numarası\nE-Posta Adresi\n\n"
+        self.workspace.hidden_editor.blockSignals(False)
+
+        self.current_file_path = None
+        self.base_title = "İsimsiz.fountain"
+        self.workspace.update_layout()
+        
+        self.mark_saved()
+        print("Yeni dosya açıldı.")
+        
+        self.show_editor_screen()
+
+    def open_file(self):
+        if not self.check_unsaved_changes():
+            return
+
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Fountain Dosyası Aç", "", "Fountain Dosyaları (*.fountain);;Tüm Dosyalar (*)"
+        )
+        
+        if file_path:
+            if self._load_file(file_path):
+                self.show_editor_screen()
+
+    # --- DOSYA İŞLEMLERİ (KAYDETME / DIŞA AKTARMA) ---
+
+    def save_thumbnail(self):
+        if not self.current_file_path: return
+        
+        if not os.path.exists(DATA_DIR):
+            os.makedirs(DATA_DIR)
+            
+        file_hash = hashlib.md5(self.current_file_path.encode('utf-8')).hexdigest()
+        img_path = os.path.join(DATA_DIR, f"{file_hash}.png")
+        data_path = os.path.join(DATA_DIR, f"{file_hash}.json")
+        
+        engine = self.workspace.engine
+        rect = QRectF(0, 0, engine.page_width, engine.page_height)
+        pixmap = QPixmap(int(engine.page_width), int(engine.page_height))
+        pixmap.fill(Qt.GlobalColor.white)
+        
+        painter = QPainter(pixmap)
+        self.workspace.scene.render(painter, target=QRectF(pixmap.rect()), source=rect)
+        painter.end()
+        
+        pixmap.scaled(140, 198, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation).save(img_path, "PNG")
+        
+        with open(data_path, 'w', encoding='utf-8') as f:
+            json.dump({
+                "path": self.current_file_path, 
+                "name": self.base_title.replace('.fountain', '')
+            }, f)
 
     def mark_unsaved(self):
         if self.is_saved:
@@ -93,79 +294,6 @@ class MainWindow(QMainWindow):
         else:
             event.ignore()
 
-    def new_file(self):
-        if not self.check_unsaved_changes():
-            return
-
-        self.workspace.hidden_editor.blockSignals(True)
-        self.workspace.hidden_editor.clear()
-        self.workspace.raw_text = ""
-        self.workspace.title_text = "Title: [SENARYO ADI]\nCredit: Yazan\nAuthor: [İsim Soyisim]\nDate: 10 Nisan 2026\nCopyright: (c) 2026\nWatermark: \nContact: \nTelefon Numarası\nE-Posta Adresi\n\n"
-        self.workspace.hidden_editor.blockSignals(False)
-
-        self.current_file_path = None
-        self.base_title = "İsimsiz.fountain"
-        self.workspace.update_layout()
-        
-        self.mark_saved()
-        print("Yeni dosya açıldı.")
-
-    def open_file(self):
-        if not self.check_unsaved_changes():
-            return
-
-        file_path, _ = QFileDialog.getOpenFileName(
-            self, "Fountain Dosyası Aç", "", "Fountain Dosyaları (*.fountain);;Tüm Dosyalar (*)"
-        )
-        
-        if file_path:
-            try:
-                with open(file_path, 'r', encoding='utf-8') as file:
-                    content = file.read().replace('\r\n', '\n').replace('\r', '').replace('\t', '   ')
-                
-                lines = content.split('\n')
-                title_lines = []
-                script_lines = []
-                in_title = True
-                has_title_data = False
-
-                for line in lines:
-                    if in_title:
-                        if line.strip() == "":
-                            if has_title_data:
-                                in_title = False 
-                            else:
-                                title_lines.append(line)
-                        elif ":" in line and line.find(":") < 15:
-                            has_title_data = True
-                            title_lines.append(line)
-                        elif has_title_data:
-                            title_lines.append(line)
-                        else:
-                            in_title = False
-                            script_lines.append(line)
-                    else:
-                        script_lines.append(line)
-
-                self.workspace.hidden_editor.blockSignals(True) 
-                if not has_title_data:
-                    self.workspace.title_text = ""
-                    self.workspace.hidden_editor.setPlainText(content)
-                else:
-                    self.workspace.title_text = "\n".join(title_lines) + "\n\n"
-                    self.workspace.hidden_editor.setPlainText("\n".join(script_lines))
-                self.workspace.hidden_editor.blockSignals(False)
-                
-                self.current_file_path = file_path
-                self.base_title = os.path.basename(file_path)
-                
-                self.workspace._sync_text() 
-                self.mark_saved() 
-                
-                print(f"Dosya açıldı: {file_path}")
-            except Exception as e:
-                QMessageBox.critical(self, "Hata", f"Dosya açılamadı:\n{str(e)}")
-
     def save_file(self):
         if not self.current_file_path:
             self.current_file_path, _ = QFileDialog.getSaveFileName(
@@ -182,6 +310,8 @@ class MainWindow(QMainWindow):
                 
                 self.base_title = os.path.basename(self.current_file_path)
                 self.mark_saved() 
+                
+                self.save_thumbnail()
                 
                 print(f"Başarıyla kaydedildi: {self.current_file_path}")
                 return True
@@ -200,11 +330,9 @@ class MainWindow(QMainWindow):
             return
 
         try:
-            # --- YENİ: PDF Çıktısı Almadan Önce İmleci Gizle ve Durdur ---
             if self.workspace.cursor_item:
                 self.workspace.cursor_timer.stop()
                 self.workspace.cursor_item.setVisible(False)
-            # -------------------------------------------------------------
 
             printer = QPrinter(QPrinter.PrinterMode.HighResolution)
             printer.setOutputFormat(QPrinter.OutputFormat.PdfFormat)
@@ -240,22 +368,19 @@ class MainWindow(QMainWindow):
 
             painter.end()
 
-            # --- YENİ: PDF Çıktısı Bittikten Sonra İmleci Geri Getir ---
             if self.workspace.cursor_item:
                 self.workspace.cursor_item.setVisible(True)
                 self.workspace.cursor_timer.start(500)
-            # -----------------------------------------------------------
 
             QMessageBox.information(self, "Başarılı", f"PDF başarıyla oluşturuldu:\n{file_path}")
             
         except Exception as e:
-            # Hata durumunda da imleci geri getirmeyi unutmuyoruz ki editör donup kalmasın
             if self.workspace.cursor_item:
                 self.workspace.cursor_item.setVisible(True)
                 self.workspace.cursor_timer.start(500)
                 
             QMessageBox.critical(self, "Hata", f"PDF oluşturulurken bir hata meydana geldi:\n{str(e)}") 
-    
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     

@@ -1,0 +1,17 @@
+# Kullanıcı Verileri ve Test Klasörleri
+user_data/
+.fountext/
+
+# Python Sanal Ortamı (ÇOK KRİTİK)
+venv/
+env/
+
+# Python Önbellek Dosyaları
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Editör ve İşletim Sistemi Kalıntıları
+.vscode/
+.idea/
+.DS_Store

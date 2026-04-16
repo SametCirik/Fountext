@@ -1,1 +1,1 @@
-# Fountext
+# Fountext Screenwriting Editor for Linux
