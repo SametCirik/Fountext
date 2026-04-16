@@ -124,7 +124,7 @@ class MainWindow(QMainWindow):
 
     def update_window_title(self):
         prefix = "*" if not self.is_saved else ""
-        self.setWindowTitle(f"{prefix}{self.base_title} - Fountext Editor v1.0")
+        self.setWindowTitle(f"{prefix}{self.base_title} - Fountext Editor v1.1")
 
     def show_home_screen(self):
         self.stacked_widget.setCurrentIndex(0)
