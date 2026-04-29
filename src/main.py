@@ -14,6 +14,7 @@ from ui_footer import EditorFooterBar
 from ui_navigator import SceneNavigator 
 from ui_home import HomeMenu, DATA_DIR
 from ui_projects import ProjectDashboard
+from ui_schema import SchemaEditor
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -53,7 +54,20 @@ class MainWindow(QMainWindow):
         self.project_dashboard.back_requested.connect(self.show_home_screen)
         self.project_dashboard.open_episode_requested.connect(self.open_file_from_path)
         
+        # --- DÜZELTME: Önce proje dashboard'u eklenmeli (Index 2 olması için) ---
         self.stacked_widget.addWidget(self.project_dashboard)
+
+        # ==========================================
+        # EKRAN 3: Şema (Dedektif Panosu)
+        # ==========================================
+        self.schema_editor = SchemaEditor()
+        self.schema_editor.back_requested.connect(lambda: self.stacked_widget.setCurrentIndex(2))
+        
+        # --- DÜZELTME: Sonra şema editörü eklenmeli (Index 3 olması için) ---
+        self.stacked_widget.addWidget(self.schema_editor)
+        
+        # Proje ekranındaki butona basılınca şemayı yükle ve perdeyi çek
+        self.project_dashboard.open_schema_requested.connect(self.open_schema_board)
 
         self.navigator = SceneNavigator(self.workspace, self.workspace)
         self.navigator.hide() 
@@ -380,6 +394,10 @@ class MainWindow(QMainWindow):
                 self.workspace.cursor_timer.start(500)
                 
             QMessageBox.critical(self, "Hata", f"PDF oluşturulurken bir hata meydana geldi:\n{str(e)}") 
+
+    def open_schema_board(self, project_path):
+        self.schema_editor.load_schema(project_path)
+        self.stacked_widget.setCurrentIndex(3)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

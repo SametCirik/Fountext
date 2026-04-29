@@ -18,6 +18,8 @@ class ClickableLabel(QLabel):
 class ProjectDashboard(QWidget):
     back_requested = pyqtSignal()
     open_episode_requested = pyqtSignal(str) 
+    # --- YENİ SİNYAL: Şema ekranına geçiş için ---
+    open_schema_requested = pyqtSignal(str) 
 
     def __init__(self):
         super().__init__()
@@ -39,7 +41,6 @@ class ProjectDashboard(QWidget):
         
         top_info_layout = QHBoxLayout()
         
-        # 1. Tıklanabilir Afiş
         self.poster_label = ClickableLabel()
         self.poster_label.setFixedSize(240, 340)
         self.poster_label.setStyleSheet("background-color: #2b2b2b; border: 2px dashed #555; border-radius: 8px;")
@@ -47,17 +48,16 @@ class ProjectDashboard(QWidget):
         self.poster_label.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.poster_label.clicked.connect(self.change_poster)
         
-        # 2. İsim ve Geri Butonu Alanı
         title_vbox = QVBoxLayout()
-        title_vbox.setSpacing(0) # --- YENİ: Boşlukları kaldırdık ---
+        title_vbox.setSpacing(0)
         
         self.btn_back = QPushButton("← Ana Menüye Dön")
-        self.btn_back.setStyleSheet("QPushButton { background-color: transparent; font-size: 17px; border: none; color: #a0a0a0; font-weight: bold; text-align: left; padding: 0px; } QPushButton:hover { color: white; }")
+        self.btn_back.setStyleSheet("QPushButton { background-color: transparent; font-size: 15px; border: none; color: #a0a0a0; font-weight: bold; text-align: left; padding: 0px; } QPushButton:hover { color: white; }")
         self.btn_back.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.btn_back.clicked.connect(self.back_requested.emit)
         
         self.title_label = QLabel("Proje Adı")
-        self.title_label.setStyleSheet("color: #e5a040; font-size: 42px; font-weight: bold; font-family: sans-serif; border: none; margin-top: 5px;") # margin ekledik
+        self.title_label.setStyleSheet("color: #e5a040; font-size: 42px; font-weight: bold; font-family: sans-serif; border: none; margin-top: 5px;") 
         self.title_label.setWordWrap(True)
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
@@ -71,7 +71,6 @@ class ProjectDashboard(QWidget):
         
         top_info_layout.addWidget(self.poster_label)
         top_info_layout.addLayout(title_vbox)
-        
         left_layout.addLayout(top_info_layout)
         
         # --- Sol Alt Kısım: Sinopsis ---
@@ -104,7 +103,7 @@ class ProjectDashboard(QWidget):
         left_layout.addWidget(self.synopsis_text)
         
         # ==========================================
-        # SAĞ PANEL: Bölümler (Episodes)
+        # SAĞ PANEL: Şema ve Bölümler
         # ==========================================
         right_panel = QFrame()
         right_panel.setStyleSheet("background-color: #252525; border-radius: 12px; border: 1px solid #333;")
@@ -113,6 +112,25 @@ class ProjectDashboard(QWidget):
         right_layout = QVBoxLayout(right_panel)
         right_layout.setContentsMargins(20, 20, 20, 20)
         right_layout.setSpacing(15)
+
+        # --- YENİ: DEDEKTİF PANOSU BUTONU ---
+        self.btn_schema = QPushButton("Dedektif Panosu (Şema)")
+        self.btn_schema.setStyleSheet("""
+            QPushButton {
+                background-color: #8b1c1c; color: white; font-weight: bold; 
+                border-radius: 5px; padding: 12px; border: 1px solid #a32222; font-size: 14px;
+            }
+            QPushButton:hover { background-color: #a32222; }
+        """)
+        self.btn_schema.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.btn_schema.clicked.connect(lambda: self.open_schema_requested.emit(self.project_path))
+        right_layout.addWidget(self.btn_schema)
+
+        # Araya ince bir çizgi (Separator)
+        line = QFrame()
+        line.setFrameShape(QFrame.Shape.HLine)
+        line.setStyleSheet("border: 1px solid #3b3b3b;")
+        right_layout.addWidget(line)
         
         episodes_title = QLabel("BÖLÜMLER (.fountain)")
         episodes_title.setStyleSheet("color: white; font-size: 20px; font-weight: bold; border: none;")
@@ -128,7 +146,6 @@ class ProjectDashboard(QWidget):
             QPushButton:hover { background-color: #f6b65a; }
         """)
         self.btn_add_episode.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        # --- YENİ: Buton bağlandı ---
         self.btn_add_episode.clicked.connect(self.create_new_episode)
         right_layout.addWidget(self.btn_add_episode) 
         
@@ -155,16 +172,9 @@ class ProjectDashboard(QWidget):
         main_layout.addWidget(left_panel, stretch=7)
         main_layout.addWidget(right_panel, stretch=3)
 
-    # ==========================================
-    # YARDIMCI FONKSİYON: DOĞAL SIRALAMA
-    # ==========================================
     def natural_keys(self, text):
         return [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', text)]
 
-    # ==========================================
-    # MANTIK (LOGIC) FONKSİYONLARI
-    # ==========================================
-    
     def load_project(self, folder_path):
         self.project_path = folder_path
         fountext_dir = os.path.join(folder_path, ".fountext")
@@ -236,24 +246,19 @@ class ProjectDashboard(QWidget):
                 btn.clicked.connect(lambda checked, p=file_path: self.open_episode_requested.emit(p))
                 self.episodes_vbox.addWidget(btn)
 
-    # --- YENİ: YENİ BÖLÜM OLUŞTURMA FONKSİYONU ---
     def create_new_episode(self):
         if not self.project_path: return
         
-        # Kullanıcıdan bölüm adı iste
         text, ok = QInputDialog.getText(self, 'Yeni Bölüm', 'Bölüm Adını Girin:\n(Örn: 1-Pilot Bölüm)')
         
         if ok and text:
-            # Dosya adını temizle (istenmeyen karakterleri çıkar)
             clean_name = re.sub(r'[\\/*?:"<>|]', "", text)
             if not clean_name: return
             
-            # Episodes klasörünü oluştur (yoksa)
             episodes_dir = os.path.join(self.project_path, "Episodes")
             if not os.path.exists(episodes_dir):
                 os.makedirs(episodes_dir)
                 
-            # Yeni dosyayı oluştur ve temel şablonu yaz
             new_file_path = os.path.join(episodes_dir, f"{clean_name}.fountain")
             
             if os.path.exists(new_file_path):
@@ -265,7 +270,6 @@ class ProjectDashboard(QWidget):
             with open(new_file_path, 'w', encoding='utf-8') as f:
                 f.write(template)
                 
-            # Listeyi yenile
             self.scan_episodes()
 
     def save_metadata(self):
