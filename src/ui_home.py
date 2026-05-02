@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QPushButton, QFrame, QScrollArea)
 from PyQt6.QtGui import QPixmap, QCursor
 from PyQt6.QtCore import Qt, pyqtSignal
+from lang_controller import LanguageController, tr
 
 DATA_DIR = "user_data/recent_projects"
 PROJECTS_FILE = "user_data/projects.json"
@@ -25,7 +26,7 @@ class ProjectCard(QFrame):
                 border: 2px solid #3b3b3b;
             }
             ProjectCard:hover {
-                border: 2px solid #e5a040; /* Hover rengi de konsepte uyumlu hale getirildi */
+                border: 2px solid #e5a040;
                 background-color: #333333;
             }
         """)
@@ -64,7 +65,7 @@ class ProjectCard(QFrame):
 class BrowseCard(QFrame):
     clicked = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, text):
         super().__init__()
         self.setFixedSize(160, 250)
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -76,7 +77,7 @@ class BrowseCard(QFrame):
                 border: 2px dashed #555555;
             }
             BrowseCard:hover {
-                border: 2px dashed #e5a040; /* Hover rengi düzeltildi */
+                border: 2px dashed #e5a040;
                 background-color: #2b2b2b;
             }
         """)
@@ -89,7 +90,7 @@ class BrowseCard(QFrame):
         self.icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.icon_label.setStyleSheet("color: #555555; font-size: 72px; font-weight: normal;")
         
-        self.name_label = QLabel("Bilgisayardan Seç")
+        self.name_label = QLabel(text)
         self.name_label.setAlignment(Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
         self.name_label.setStyleSheet("color: #a0a0a0; font-weight: bold; font-family: sans-serif;")
         self.name_label.setWordWrap(True)
@@ -153,7 +154,7 @@ class ProjectFolderCard(QFrame):
 class AddProjectCard(QFrame):
     clicked = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, text):
         super().__init__()
         self.setFixedSize(160, 250)
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -178,7 +179,7 @@ class AddProjectCard(QFrame):
         self.icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.icon_label.setStyleSheet("color: #e5a040; font-size: 72px; font-weight: normal;")
         
-        self.name_label = QLabel("Yeni Proje Klasörü")
+        self.name_label = QLabel(text)
         self.name_label.setAlignment(Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
         self.name_label.setStyleSheet("color: #e5a040; font-weight: bold; font-family: sans-serif;")
         self.name_label.setWordWrap(True)
@@ -196,7 +197,6 @@ class HomeMenu(QWidget):
     open_project_requested = pyqtSignal(str)
     new_project_requested = pyqtSignal()
     browse_project_requested = pyqtSignal()
-    
     open_folder_requested = pyqtSignal(str) 
     create_folder_requested = pyqtSignal()
 
@@ -216,16 +216,26 @@ class HomeMenu(QWidget):
         
         header_layout = QHBoxLayout(self.header_widget)
         header_layout.setContentsMargins(40, 40, 40, 35) 
-        # --- YENİ: Dikey hizalamayı merkeze çek ---
         header_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
-        title = QLabel("Fountext Screenwriting Editor")
-        # Optik hizalama için başlığın padding'i sıfırlandı
-        title.setStyleSheet("color: white; font-size: 36px; font-weight: bold; font-family: 'Courier Prime', monospace; border: none; padding: 0; margin: 0;")
+        self.title_label = QLabel(tr("app_title"))
+        self.title_label.setStyleSheet("color: white; font-size: 36px; font-weight: bold; font-family: 'Courier Prime', monospace; border: none; padding: 0; margin: 0;")
         
-        self.btn_new = QPushButton("Yeni Senaryo (+)")
+        # TAM İSTEDİĞİN GİBİ TEK BİR DİL BUTONU (SAĞ TARAFTA)
+        self.btn_lang = QPushButton(LanguageController().current_lang.upper())
+        self.btn_lang.setFixedSize(40, 40)
+        self.btn_lang.setStyleSheet("""
+            QPushButton { 
+                background-color: transparent; color: #e5a040; font-weight: bold; 
+                font-size: 16px; border: 2px solid #e5a040; border-radius: 5px; 
+            } 
+            QPushButton:hover { background-color: #e5a040; color: #1e1e1e; }
+        """)
+        self.btn_lang.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.btn_lang.clicked.connect(self.toggle_lang)
+
+        self.btn_new = QPushButton(tr("new_script_btn"))
         self.btn_new.setFixedSize(150, 40)
-        # --- YENİ: Buton rengi altın/turuncu yapıldı ---
         self.btn_new.setStyleSheet("""
             QPushButton {
                 background-color: #e5a040; 
@@ -234,15 +244,15 @@ class HomeMenu(QWidget):
                 border-radius: 5px; 
                 border: none;
             }
-            QPushButton:hover {
-                background-color: #f6b65a;
-            }
+            QPushButton:hover { background-color: #f6b65a; }
         """)
         self.btn_new.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.btn_new.clicked.connect(self.new_project_requested.emit)
         
-        header_layout.addWidget(title)
+        # DOĞRU SIRALAMA: Başlık -> Boşluk(Stretch) -> Dil Butonu -> Yeni Senaryo Butonu
+        header_layout.addWidget(self.title_label)
         header_layout.addStretch()
+        header_layout.addWidget(self.btn_lang)
         header_layout.addWidget(self.btn_new)
         
         main_layout.addWidget(self.header_widget)
@@ -294,11 +304,11 @@ class HomeMenu(QWidget):
             
             scroll.setWidget(container)
             content_layout.addWidget(scroll)
-            return layout
+            return layout, title_lbl
 
-        self.recent_layout = create_horizontal_scroll_row("Son Düzenlenenler", "#a0a0a0")
-        self.projects_layout = create_horizontal_scroll_row("Projeler", "#e5a040")
-        self.guide_layout = create_horizontal_scroll_row("Kılavuzlar", "#a0a0a0")
+        self.recent_layout, self.lbl_recent = create_horizontal_scroll_row(tr("recent_files_title"), "#a0a0a0")
+        self.projects_layout, self.lbl_projects = create_horizontal_scroll_row(tr("projects_title"), "#e5a040")
+        self.guide_layout, self.lbl_guides = create_horizontal_scroll_row(tr("guides_title"), "#a0a0a0")
 
         content_layout.addStretch()
         self.scroll_area.setWidget(self.content_widget)
@@ -310,9 +320,24 @@ class HomeMenu(QWidget):
         self.scroll_area.verticalScrollBar().valueChanged.connect(self.update_header_style)
 
         self.load_projects()
+        LanguageController().language_changed.connect(self.update_texts)
+
+    def toggle_lang(self):
+        LanguageController().toggle_language()
+        import sys, os
+        # Yeni dille uygulamayı anında yeniden başlat
+        os.execl(sys.executable, sys.executable, *sys.argv)
+
+    def update_texts(self):
+        self.title_label.setText(tr("app_title"))
+        self.btn_lang.setText(LanguageController().current_lang.upper())
+        self.btn_new.setText(tr("new_script_btn"))
+        self.lbl_recent.setText(tr("recent_files_title"))
+        self.lbl_projects.setText(tr("projects_title"))
+        self.lbl_guides.setText(tr("guides_title"))
+        self.load_projects()
 
     def update_header_style(self, value):
-        """Scroll çubuğu hareket ettiğinde Header tasarımını günceller"""
         if value > 0 and not self._is_scrolled:
             self.header_widget.setStyleSheet("QWidget#HeaderWidget { background-color: #181818; border-bottom: 1px solid #333; }")
             self._is_scrolled = True
@@ -348,7 +373,7 @@ class HomeMenu(QWidget):
             card.clicked.connect(self.open_project_requested.emit)
             self.recent_layout.addWidget(card)
 
-        browse_card = BrowseCard()
+        browse_card = BrowseCard(tr("browse_pc"))
         browse_card.clicked.connect(self.browse_project_requested.emit)
         self.recent_layout.addWidget(browse_card)
 
@@ -372,13 +397,13 @@ class HomeMenu(QWidget):
                             meta = json.load(mf)
                             name = meta.get("title", os.path.basename(folder_path))
                         except:
-                            name = "İsimsiz Proje"
+                            name = tr("untitled_project")
                             
                     card = ProjectFolderCard(name, folder_path, poster_path)
                     card.clicked.connect(self.open_folder_requested.emit)
                     self.projects_layout.addWidget(card)
 
-        add_project_card = AddProjectCard()
+        add_project_card = AddProjectCard(tr("new_project_folder"))
         add_project_card.clicked.connect(self.create_folder_requested.emit)
         self.projects_layout.addWidget(add_project_card)
 
@@ -386,13 +411,13 @@ class HomeMenu(QWidget):
         
         guide_tr = os.path.abspath("guide_TR.fountain")
         if os.path.exists(guide_tr):
-            card = ProjectCard("Türkçe Kılavuz", guide_tr, "", is_guide=True)
+            card = ProjectCard(tr("tr_guide"), guide_tr, "", is_guide=True)
             card.clicked.connect(self.open_project_requested.emit)
             self.guide_layout.addWidget(card)
 
         guide_en = os.path.abspath("guide_EN.fountain")
         if os.path.exists(guide_en):
-            card = ProjectCard("English Guide", guide_en, "", is_guide=True)
+            card = ProjectCard(tr("en_guide"), guide_en, "", is_guide=True)
             card.clicked.connect(self.open_project_requested.emit)
             self.guide_layout.addWidget(card)
 

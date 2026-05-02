@@ -8,6 +8,8 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                              QFileDialog, QInputDialog, QMessageBox)
 from PyQt6.QtGui import QPixmap, QCursor
 from PyQt6.QtCore import Qt, pyqtSignal
+from lang_controller import LanguageController, tr
+from lang_controller import LanguageController, tr
 
 class ClickableLabel(QLabel):
     clicked = pyqtSignal()
@@ -51,7 +53,7 @@ class ProjectDashboard(QWidget):
         title_vbox = QVBoxLayout()
         title_vbox.setSpacing(0)
         
-        self.btn_back = QPushButton("← Ana Menüye Dön")
+        self.btn_back = QPushButton(tr("proj_back_btn"))
         self.btn_back.setStyleSheet("QPushButton { background-color: transparent; font-size: 15px; border: none; color: #a0a0a0; font-weight: bold; text-align: left; padding: 0px; } QPushButton:hover { color: white; }")
         self.btn_back.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.btn_back.clicked.connect(self.back_requested.emit)
@@ -61,7 +63,7 @@ class ProjectDashboard(QWidget):
         self.title_label.setWordWrap(True)
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
-        self.date_label = QLabel("Oluşturulma: -")
+        self.date_label = QLabel(f"{tr("proj_created")} -")
         self.date_label.setStyleSheet("color: #777; font-size: 14px; border: none; margin-bottom: 5px;")
         
         title_vbox.addWidget(self.btn_back)
@@ -75,10 +77,10 @@ class ProjectDashboard(QWidget):
         
         # --- Sol Alt Kısım: Sinopsis ---
         sinopsis_header = QHBoxLayout()
-        sinopsis_label = QLabel("Sinopsis")
+        sinopsis_label = QLabel(tr("proj_synopsis"))
         sinopsis_label.setStyleSheet("color: #a0a0a0; font-size: 20px; font-weight: bold; border: none;")
         
-        self.btn_save_info = QPushButton("Bilgileri Kaydet")
+        self.btn_save_info = QPushButton(tr("proj_save_info"))
         self.btn_save_info.setStyleSheet("background-color: #3b3b3b; color: white; border-radius: 4px; border: none; padding: 5px 10px; font-weight:bold;")
         self.btn_save_info.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self.btn_save_info.clicked.connect(self.save_metadata)
@@ -114,7 +116,7 @@ class ProjectDashboard(QWidget):
         right_layout.setSpacing(15)
 
         # --- YENİ: DEDEKTİF PANOSU BUTONU ---
-        self.btn_schema = QPushButton("Dedektif Panosu (Şema)")
+        self.btn_schema = QPushButton(tr("proj_schema_btn"))
         self.btn_schema.setStyleSheet("""
             QPushButton {
                 background-color: #8b1c1c; color: white; font-weight: bold; 
@@ -132,12 +134,12 @@ class ProjectDashboard(QWidget):
         line.setStyleSheet("border: 1px solid #3b3b3b;")
         right_layout.addWidget(line)
         
-        episodes_title = QLabel("BÖLÜMLER (.fountain)")
+        episodes_title = QLabel(tr("proj_episodes"))
         episodes_title.setStyleSheet("color: white; font-size: 20px; font-weight: bold; border: none;")
         episodes_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         right_layout.addWidget(episodes_title)
         
-        self.btn_add_episode = QPushButton("+ Klasöre Yeni Bölüm Ekle")
+        self.btn_add_episode = QPushButton(tr("proj_add_episode"))
         self.btn_add_episode.setStyleSheet("""
             QPushButton {
                 background-color: #e5a040; color: #1e1e1e; font-weight: bold; 
@@ -170,7 +172,25 @@ class ProjectDashboard(QWidget):
         right_layout.addWidget(self.episodes_scroll)
         
         main_layout.addWidget(left_panel, stretch=7)
+        
+        
         main_layout.addWidget(right_panel, stretch=3)
+        LanguageController().language_changed.connect(self.update_texts)
+
+    def update_texts(self):
+        self.btn_back.setText(tr("proj_back_btn"))
+        self.btn_save_info.setText(tr("proj_save_info"))
+        self.btn_schema.setText(tr("proj_schema_btn"))
+        self.btn_add_episode.setText(tr("proj_add_episode"))
+
+        LanguageController().language_changed.connect(self.update_texts)
+
+    def update_texts(self):
+        self.btn_back.setText(tr("proj_back_btn"))
+        self.btn_save_info.setText(tr("proj_save_info"))
+        self.btn_schema.setText(tr("proj_schema_btn"))
+        self.btn_add_episode.setText(tr("proj_add_episode"))
+
 
     def natural_keys(self, text):
         return [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', text)]
@@ -206,7 +226,7 @@ class ProjectDashboard(QWidget):
             self.poster_label.setStyleSheet("border: none; border-radius: 8px;")
         else:
             self.poster_label.clear()
-            self.poster_label.setText("AFİŞ EKLE\n(+)")
+            self.poster_label.setText(tr("proj_add_poster"))
             self.poster_label.setStyleSheet("background-color: #2b2b2b; color: #a0a0a0; font-weight: bold; border: 2px dashed #555; border-radius: 8px;")
             
         self.scan_episodes()
@@ -225,7 +245,7 @@ class ProjectDashboard(QWidget):
                     fountain_files.append(os.path.join(root, file))
                     
         if not fountain_files:
-            empty_lbl = QLabel("Henüz .fountain dosyası yok.")
+            empty_lbl = QLabel(tr("proj_no_episodes"))
             empty_lbl.setStyleSheet("color: #777; font-style: italic; border: none;")
             self.episodes_vbox.addWidget(empty_lbl)
         else:
@@ -287,7 +307,7 @@ class ProjectDashboard(QWidget):
         self.btn_save_info.setStyleSheet("background-color: #4CAF50; color: white; border-radius: 4px; border: none; padding: 5px 10px; font-weight:bold;")
         
         from PyQt6.QtCore import QTimer
-        QTimer.singleShot(2000, lambda: self.btn_save_info.setText("Bilgileri Kaydet"))
+        QTimer.singleShot(2000, lambda: self.btn_save_info.setText(tr("proj_save_info")))
         QTimer.singleShot(2000, lambda: self.btn_save_info.setStyleSheet("background-color: #3b3b3b; color: white; border-radius: 4px; border: none; padding: 5px 10px; font-weight:bold;"))
 
     def change_poster(self):

@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QMenuBar
 from PyQt6.QtGui import QAction
+from lang_controller import LanguageController, tr
 
 class EditorMenuBar(QMenuBar):
     def __init__(self, main_window, editor):
@@ -7,80 +8,89 @@ class EditorMenuBar(QMenuBar):
         self.main_window = main_window
         self.editor = editor 
         self._setup_menu()
+        LanguageController().language_changed.connect(self.update_texts)
 
     def _setup_menu(self):
-        file_menu = self.addMenu("&Dosya")
+        self.file_menu = self.addMenu(tr("menu_file"))
 
-        new_action = QAction("Yeni", self)
-        new_action.setShortcut("Ctrl+N")
-        new_action.triggered.connect(self.main_window.new_file)
-        file_menu.addAction(new_action)
+        self.new_action = QAction(tr("menu_new"), self)
+        self.new_action.setShortcut("Ctrl+N")
+        self.new_action.triggered.connect(self.main_window.new_file)
+        self.file_menu.addAction(self.new_action)
 
-        open_action = QAction("Aç...", self)
-        open_action.setShortcut("Ctrl+O")
-        open_action.triggered.connect(self.main_window.open_file)
-        file_menu.addAction(open_action)
+        self.open_action = QAction(tr("menu_open"), self)
+        self.open_action.setShortcut("Ctrl+O")
+        self.open_action.triggered.connect(self.main_window.open_file)
+        self.file_menu.addAction(self.open_action)
 
-        save_action = QAction("Kaydet", self)
-        save_action.setShortcut("Ctrl+S")
-        save_action.triggered.connect(self.main_window.save_file)
-        file_menu.addAction(save_action)
+        self.save_action = QAction(tr("menu_save"), self)
+        self.save_action.setShortcut("Ctrl+S")
+        self.save_action.triggered.connect(self.main_window.save_file)
+        self.file_menu.addAction(self.save_action)
 
-        # --- YENİ: PDF Dışa Aktar Butonu ---
-        export_pdf_action = QAction("PDF Olarak Dışa Aktar...", self)
-        export_pdf_action.setShortcut("Ctrl+E")
-        export_pdf_action.triggered.connect(self.main_window.export_pdf)
-        file_menu.addAction(export_pdf_action)
-        # -----------------------------------.
+        self.export_pdf_action = QAction(tr("menu_export_pdf"), self)
+        self.export_pdf_action.setShortcut("Ctrl+E")
+        self.export_pdf_action.triggered.connect(self.main_window.export_pdf)
+        self.file_menu.addAction(self.export_pdf_action)
 
-        file_menu.addSeparator()
+        self.file_menu.addSeparator()
 
-        # --- YENİ: Ana Menüye Dön Butonu ---
-        home_action = QAction("Ana Menü'ye Dön", self)
-        home_action.setShortcut("Ctrl+H")
-        home_action.triggered.connect(self.main_window.show_home_screen)
-        file_menu.addAction(home_action)
-        # -----------------------------------
+        self.home_action = QAction(tr("menu_home"), self)
+        self.home_action.setShortcut("Ctrl+H")
+        self.home_action.triggered.connect(self.main_window.show_home_screen)
+        self.file_menu.addAction(self.home_action)
 
-        file_menu.addSeparator()
+        self.file_menu.addSeparator()
 
-        exit_action = QAction("Çıkış", self)
-        exit_action.setShortcut("Ctrl+Q")
-        # ...
+        self.exit_action = QAction(tr("menu_exit"), self)
+        self.exit_action.setShortcut("Ctrl+Q")
+        self.exit_action.triggered.connect(self.main_window.close)
+        self.file_menu.addAction(self.exit_action)
 
-        exit_action = QAction("Çıkış", self)
-        exit_action.setShortcut("Ctrl+Q")
-        exit_action.triggered.connect(self.main_window.close)
-        file_menu.addAction(exit_action)
-
-        edit_menu = self.addMenu("Düz&enle")
+        self.edit_menu = self.addMenu(tr("menu_edit"))
         
-        undo_action = QAction("Geri Al", self)
-        undo_action.setShortcut("Ctrl+Z")
-        undo_action.triggered.connect(self._dummy_undo) 
-        edit_menu.addAction(undo_action)
+        self.undo_action = QAction(tr("menu_undo"), self)
+        self.undo_action.setShortcut("Ctrl+Z")
+        self.undo_action.triggered.connect(self._dummy_undo) 
+        self.edit_menu.addAction(self.undo_action)
 
-        redo_action = QAction("Yinele", self)
-        redo_action.setShortcut("Ctrl+Shift+Z")
-        redo_action.triggered.connect(self._dummy_redo)
-        edit_menu.addAction(redo_action)
+        self.redo_action = QAction(tr("menu_redo"), self)
+        self.redo_action.setShortcut("Ctrl+Shift+Z")
+        self.redo_action.triggered.connect(self._dummy_redo)
+        self.edit_menu.addAction(self.redo_action)
 
-        view_menu = self.addMenu("&Görünüm")
+        self.view_menu = self.addMenu(tr("menu_view"))
         
-        # --- YENİ: Sahne Gezgini Menü Seçeneği ---
-        self.toggle_navigator_action = QAction("Sahne Gezgini", self)
+        self.toggle_navigator_action = QAction(tr("menu_navigator"), self)
         self.toggle_navigator_action.setCheckable(True)
-        self.toggle_navigator_action.setChecked(True) # Başlangıçta açık gelsin
+        self.toggle_navigator_action.setChecked(True)
         self.toggle_navigator_action.triggered.connect(self.main_window.toggle_navigator)
-        view_menu.addAction(self.toggle_navigator_action)
+        self.view_menu.addAction(self.toggle_navigator_action)
         
-        toggle_view_action = QAction("Fountain Düz Metin Modu - ÇOK YAKINDA!", self)
-        toggle_view_action.setCheckable(True)  
-        toggle_view_action.setShortcut("Ctrl+T")
-        view_menu.addAction(toggle_view_action)
+        self.toggle_view_action = QAction(tr("menu_plain_text"), self)
+        self.toggle_view_action.setCheckable(True)  
+        self.toggle_view_action.setShortcut("Ctrl+T")
+        self.view_menu.addAction(self.toggle_view_action)
+
+    def update_texts(self):
+        self.file_menu.setTitle(tr("menu_file"))
+        self.new_action.setText(tr("menu_new"))
+        self.open_action.setText(tr("menu_open"))
+        self.save_action.setText(tr("menu_save"))
+        self.export_pdf_action.setText(tr("menu_export_pdf"))
+        self.home_action.setText(tr("menu_home"))
+        self.exit_action.setText(tr("menu_exit"))
+        
+        self.edit_menu.setTitle(tr("menu_edit"))
+        self.undo_action.setText(tr("menu_undo"))
+        self.redo_action.setText(tr("menu_redo"))
+        
+        self.view_menu.setTitle(tr("menu_view"))
+        self.toggle_navigator_action.setText(tr("menu_navigator"))
+        self.toggle_view_action.setText(tr("menu_plain_text"))
 
     def _dummy_undo(self):
-        print("Geri Al: Daha sonra C++ motoruna eklenecek.")
+        print(tr("dummy_undo"))
 
     def _dummy_redo(self):
-        print("Yinele: Daha sonra C++ motoruna eklenecek.")
+        print(tr("dummy_redo"))

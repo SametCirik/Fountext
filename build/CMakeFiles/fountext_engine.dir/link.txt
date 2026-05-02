@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC -O3 -DNDEBUG -shared -flto=auto -Wl,--dependency-file=CMakeFiles/fountext_engine.dir/link.d  -o fountext_engine.cpython-314-x86_64-linux-gnu.so CMakeFiles/fountext_engine.dir/src_cpp/bindings.cpp.o CMakeFiles/fountext_engine.dir/src_cpp/layout_engine.cpp.o

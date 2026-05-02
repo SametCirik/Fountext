@@ -1,3 +1,0 @@
-/home/smtc/Codes/Fountext/build/CMakeFiles/fountext_engine.dir
-/home/smtc/Codes/Fountext/build/CMakeFiles/edit_cache.dir
-/home/smtc/Codes/Fountext/build/CMakeFiles/rebuild_cache.dir
