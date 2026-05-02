@@ -113,7 +113,7 @@ That's it! The pre-built binary includes all dependencies and is ready to use.
 
 ---
 
-## 🍴 Contributing & Forking
+## Contributing & Forking
 
 We welcome contributions! Here's how to get started:
 
