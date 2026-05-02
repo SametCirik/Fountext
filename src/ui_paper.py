@@ -192,8 +192,6 @@ class Workspace(QGraphicsView):
         result = self.engine.calculate_cursor_position(full_text, cursor_byte_pos)
         cx, cy, absolute_y = result[0], result[1], result[2]
         block_type_val = int(result[3]) if len(result) > 3 else 1  
-        
-        current_page = int(absolute_y // (self.engine.page_height + 50)) + 1
 
         if self.cursor_item:
             self.cursor_item.setLine(cx + 1, absolute_y + 2, cx + 1, absolute_y + self.engine.line_spacing - 1)
@@ -203,9 +201,6 @@ class Workspace(QGraphicsView):
         main_win = self.window()
         if hasattr(main_win, 'toolbar'):
             main_win.toolbar.update_active_block(block_type_val)
-
-        if hasattr(main_win, 'footer'):
-            pass
 
     def update_selection_highlights(self):
         sel_start = self.hidden_editor.textCursor().selectionStart() + len(self.title_text)
@@ -230,7 +225,6 @@ class Workspace(QGraphicsView):
                     raw_local_start = overlap_start - b_start
                     raw_local_end = overlap_end - b_start
                     
-                    # C++ wrapper'ın eklediği \n karakterlerini hesaba katan akıllı indeks haritalayıcı
                     cpp_text = item.toPlainText()
                     def map_idx(raw_idx):
                         mapped = 0
@@ -244,7 +238,6 @@ class Workspace(QGraphicsView):
                     local_start = map_idx(raw_local_start)
                     local_end = map_idx(raw_local_end)
                     
-                    # Güvenlik Sınırı (Out of range çökmelerini kesin olarak engeller)
                     text_len = item.document().characterCount() - 1
                     local_start = max(0, min(local_start, text_len))
                     local_end = max(0, min(local_end, text_len))
@@ -292,7 +285,6 @@ class Workspace(QGraphicsView):
                         
                     text_item.setDefaultTextColor(QColor("#1a1a1a"))
                     
-                    # Metni C++ motorundan geldiği gibi (üzerinde oynamadan) alıyoruz
                     display_text = block.text
 
                     if block.type in (fountext_engine.BlockType.TitleCenter, fountext_engine.BlockType.TitleLeft):
@@ -339,10 +331,33 @@ class Workspace(QGraphicsView):
             
         if hasattr(main_win, 'navigator'):
             main_win.navigator.update_scenes(extracted_scenes)
-        self._update_visible_page()
+            self._update_visible_page()
     
     def keyPressEvent(self, event):
         modifiers = QApplication.keyboardModifiers()
+        
+        if event.key() == Qt.Key.Key_Up:
+            if modifiers == Qt.KeyboardModifier.ShiftModifier:
+                self.verticalScrollBar().setValue(self.verticalScrollBar().value() - 50)
+                return
+            else:
+                cursor = self.hidden_editor.textCursor()
+                cursor.movePosition(QTextCursor.MoveOperation.Up)
+                self.hidden_editor.setTextCursor(cursor)
+                self._sync_cursor()
+                return
+
+        elif event.key() == Qt.Key.Key_Down:
+            if modifiers == Qt.KeyboardModifier.ShiftModifier:
+                self.verticalScrollBar().setValue(self.verticalScrollBar().value() + 50)
+                return
+            else:
+                cursor = self.hidden_editor.textCursor()
+                cursor.movePosition(QTextCursor.MoveOperation.Down)
+                self.hidden_editor.setTextCursor(cursor)
+                self._sync_cursor()
+                return
+
         if modifiers == Qt.KeyboardModifier.ControlModifier:
             if event.key() == Qt.Key.Key_V:   
                 clipboard_text = QApplication.clipboard().text()
