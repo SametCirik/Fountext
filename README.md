@@ -8,7 +8,9 @@
   </a>
 </p>
 
-<h1 align="center">🎬 Fountext Screenwriting Editor</h1>
+<h1 align="center">
+  Fountext Screenwriting Editor for Linux
+</h1>
 
 <p align="center">
   <strong>A blazing fast, professional screenwriting environment built with Python, PyQt6, and a custom C++ layout engine.</strong>
@@ -28,24 +30,24 @@
 
 ---
 
-## 🌟 About Fountext
+## About Fountext
 
 Fountext is a modern, lightweight, and powerful screenwriting editor that fully embraces the **Fountain** syntax. Forget about formatting struggles; just write. Fountext's custom-built C++ rendering engine handles all the professional formatting for you automatically.
 
 ### Key Features
 
-✨ **Fountain Format Support** - Full support for the .fountain screenwriting format  
-⚡ **Real-time Rendering** - Custom C++ layout engine provides millimeter-perfect positioning  
-🎯 **Auto-Formatting** - Automatically formats scene headings, character names, and dialogue  
-📑 **Scene Navigation** - Floating panel for quick scene/location navigation  
-📄 **PDF Export** - Export to industry-standard, text-selectable vector PDFs  
-🎨 **Smooth Scrolling** - Navigate seamlessly between scenes  
-📊 **Page Statistics** - Real-time page count and character count tracking  
-🌐 **Bilingual Support** - Full support for English and Turkish  
+**Fountain Format Support** - Full support for the .fountain screenwriting format  
+**Real-time Rendering** - Custom C++ layout engine provides millimeter-perfect positioning  
+**Auto-Formatting** - Automatically formats scene headings, character names, and dialogue  
+**Scene Navigation** - Floating panel for quick scene/location navigation  
+**PDF Export** - Export to industry-standard, text-selectable vector PDFs  
+**Smooth Scrolling** - Navigate seamlessly between scenes  
+**Page Statistics** - Real-time page count and character count tracking  
+**Bilingual Support** - Full support for English and Turkish  
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Option 1: Download Pre-built Binaries (Recommended for Most Users)
 
@@ -152,15 +154,15 @@ We welcome contributions! Here's how to get started:
 
 ### Areas for Contribution
 
-- 🐛 **Bug Fixes** - Found an issue? Help us fix it!
-- ✨ **Features** - Have an idea? Implement it!
-- 📚 **Documentation** - Help improve guides and documentation
-- 🌍 **Translations** - Add support for new languages
-- 🧪 **Testing** - Report issues and test new features
+- **Bug Fixes** - Found an issue? Help us fix it!
+- **Features** - Have an idea? Implement it!
+- **Documentation** - Help improve guides and documentation
+- **Translations** - Add support for new languages
+- **Testing** - Report issues and test new features
 
 ---
 
-## 📖 Usage Guide
+## Usage Guide
 
 ### Basic Writing
 
@@ -190,7 +192,7 @@ Fountext-Screenwriting-Editor/
 
 ---
 
-## 🛠️ System Requirements
+## System Requirements
 
 - **OS**: Linux (Ubuntu 20.04+, Fedora 33+, Debian 11+, or similar)
 - **Python**: 3.8 or higher
@@ -199,20 +201,20 @@ Fountext-Screenwriting-Editor/
 
 ---
 
-## 📝 Documentation
+## Documentation
 
 - **[User Guide (English)](./guide_EN.pdf)** - Complete user guide in Fountain format
 - **[User Guide (Turkish)](./guide_TR.pdf)** - Türkçe kullanıcı rehberi
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the **GNU General Public License v3.0** - see the [LICENSE](./LICENSE) file for details.
 
 ---
 
-## 🤝 Support & Community
+## Support & Community
 
 - **Issues** - Found a bug? [Report it here](https://github.com/SametCirik/Fountext-Screenwriting-Editor/issues)
 - **Discussions** - Have questions? [Start a discussion](https://github.com/SametCirik/Fountext-Screenwriting-Editor/discussions)
@@ -220,7 +222,7 @@ This project is licensed under the **GNU General Public License v3.0** - see the
 
 ---
 
-## 🎯 Roadmap
+## Roadmap
 
 - [ ] Cross-platform support (Windows, macOS)
 - [ ] Additional export formats (FDXM, AV Pro)
@@ -230,7 +232,7 @@ This project is licensed under the **GNU General Public License v3.0** - see the
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 Built with:
 - **Python** - Core application logic
@@ -241,8 +243,8 @@ Built with:
 
 ---
 
-## 📞 Questions?
+## Questions?
 
 Feel free to open an [issue](https://github.com/SametCirik/Fountext-Screenwriting-Editor/issues) or [discussion](https://github.com/SametCirik/Fountext-Screenwriting-Editor/discussions) for any questions or feedback!
 
-**Happy writing! 🎬✨**
+**Happy writing!**
