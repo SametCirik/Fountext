@@ -253,6 +253,7 @@ class HomeMenu(QWidget):
         header_layout.addWidget(self.title_label)
         header_layout.addStretch()
         header_layout.addWidget(self.btn_lang)
+        header_layout.addSpacing(15)
         header_layout.addWidget(self.btn_new)
         
         main_layout.addWidget(self.header_widget)

@@ -54,6 +54,7 @@ public:
 
 // YENİ: Artık X, Y, Abs_Y, ve BlockType_INT dönüyor!
     std::vector<float> calculate_cursor_position(const std::string& full_text, int cursor_byte_pos);
+    int calculate_index_from_position(const std::string& full_text, float x, float y);
 
 private:
     std::vector<TextBlock> parse_fountain(const std::string& text);

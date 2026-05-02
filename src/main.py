@@ -11,17 +11,18 @@ from ui_paper import Workspace
 from ui_menu import EditorMenuBar
 from ui_toolbar import EditorToolBar
 from ui_footer import EditorFooterBar
-from ui_navigator import SceneNavigator 
+from ui_navigator import SceneNavigator  
 from ui_home import HomeMenu, DATA_DIR
 from ui_projects import ProjectDashboard
 from ui_schema import SchemaEditor
+from lang_controller import LanguageController, tr
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.base_title = "Fountext"
-        self.is_saved = True 
+        self.is_saved = True  
         self.resize(1100, 800)
 
         self.stacked_widget = QStackedWidget()
@@ -54,7 +55,6 @@ class MainWindow(QMainWindow):
         self.project_dashboard.back_requested.connect(self.show_home_screen)
         self.project_dashboard.open_episode_requested.connect(self.open_file_from_path)
         
-        # --- DÜZELTME: Önce proje dashboard'u eklenmeli (Index 2 olması için) ---
         self.stacked_widget.addWidget(self.project_dashboard)
 
         # ==========================================
@@ -63,14 +63,12 @@ class MainWindow(QMainWindow):
         self.schema_editor = SchemaEditor()
         self.schema_editor.back_requested.connect(lambda: self.stacked_widget.setCurrentIndex(2))
         
-        # --- DÜZELTME: Sonra şema editörü eklenmeli (Index 3 olması için) ---
         self.stacked_widget.addWidget(self.schema_editor)
         
-        # Proje ekranındaki butona basılınca şemayı yükle ve perdeyi çek
         self.project_dashboard.open_schema_requested.connect(self.open_schema_board)
 
         self.navigator = SceneNavigator(self.workspace, self.workspace)
-        self.navigator.hide() 
+        self.navigator.hide()  
         
         editor_reference = self.workspace
 
@@ -85,13 +83,13 @@ class MainWindow(QMainWindow):
 
         self.footer.zoom_requested.connect(self.workspace.set_zoom)
 
-        self.current_file_path = None  
+        self.current_file_path = None   
         
         self.show_home_screen()
+        LanguageController().language_changed.connect(self.update_texts_on_lang_change)
 
     # --- PROJE KAYIT (REGISTRY) SİSTEMİ ---
     def register_project(self, folder_path):
-        """Projenin yolunu Fountext'in genel proje listesine kaydeder."""
         projects_file = "user_data/projects.json"
         if not os.path.exists("user_data"):
             os.makedirs("user_data")
@@ -114,7 +112,7 @@ class MainWindow(QMainWindow):
             folder_path = QFileDialog.getExistingDirectory(self, "Fountext Proje Klasörünü Seç")
             
         if folder_path:
-            self.register_project(folder_path) # Yeni projeyi JSON'a ekle
+            self.register_project(folder_path)
             self.project_dashboard.load_project(folder_path)
             self.stacked_widget.setCurrentIndex(2)
 
@@ -136,9 +134,14 @@ class MainWindow(QMainWindow):
         if hasattr(self, 'navigator') and self.workspace:
             self.navigator.setGeometry(0, 0, self.navigator.width(), self.workspace.height())
 
+    def update_texts_on_lang_change(self):
+        if not self.current_file_path and self.base_title.startswith(tr("untitled_filename", default="İsimsiz")):
+            self.base_title = tr("untitled_filename") + ".fountain"
+        self.update_window_title()
+
     def update_window_title(self):
         prefix = "*" if not self.is_saved else ""
-        self.setWindowTitle(f"{prefix}{self.base_title} - Fountext Editor v1.0")
+        self.setWindowTitle(f"{prefix}{self.base_title} - Fountext Editor v1.2")
 
     def show_home_screen(self):
         self.stacked_widget.setCurrentIndex(0)
@@ -147,7 +150,7 @@ class MainWindow(QMainWindow):
         self.footer.hide()
         if self.navigator.isVisible():
             self.navigator.hide()
-        self.home_menu.load_projects() 
+        self.home_menu.load_projects()  
         self.setWindowTitle("Fountext - Ana Menü")
 
     def show_editor_screen(self):
@@ -178,7 +181,7 @@ class MainWindow(QMainWindow):
                 if in_title:
                     if line.strip() == "":
                         if has_title_data:
-                            in_title = False 
+                            in_title = False  
                         else:
                             title_lines.append(line)
                     elif ":" in line and line.find(":") < 15:
@@ -192,7 +195,7 @@ class MainWindow(QMainWindow):
                 else:
                     script_lines.append(line)
 
-            self.workspace.hidden_editor.blockSignals(True) 
+            self.workspace.hidden_editor.blockSignals(True)  
             if not has_title_data:
                 self.workspace.title_text = ""
                 self.workspace.hidden_editor.setPlainText(content)
@@ -204,8 +207,8 @@ class MainWindow(QMainWindow):
             self.current_file_path = file_path
             self.base_title = os.path.basename(file_path)
             
-            self.workspace._sync_text() 
-            self.mark_saved() 
+            self.workspace._sync_text()  
+            self.mark_saved()  
             
             print(f"Dosya açıldı: {file_path}")
             return True
@@ -224,7 +227,7 @@ class MainWindow(QMainWindow):
         self.workspace.hidden_editor.blockSignals(False)
 
         self.current_file_path = None
-        self.base_title = "İsimsiz.fountain"
+        self.base_title = tr("untitled_filename") + ".fountain"
         self.workspace.update_layout()
         
         self.mark_saved()
@@ -269,7 +272,7 @@ class MainWindow(QMainWindow):
         
         with open(data_path, 'w', encoding='utf-8') as f:
             json.dump({
-                "path": self.current_file_path, 
+                "path": self.current_file_path,  
                 "name": self.base_title.replace('.fountain', '')
             }, f)
 
@@ -323,7 +326,7 @@ class MainWindow(QMainWindow):
                     file.write(self.workspace.title_text + self.workspace.raw_text)
                 
                 self.base_title = os.path.basename(self.current_file_path)
-                self.mark_saved() 
+                self.mark_saved()  
                 
                 self.save_thumbnail()
                 
@@ -332,7 +335,7 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 QMessageBox.critical(self, "Hata", f"Dosya kaydedilemedi:\n{str(e)}")
                 return False
-        return False 
+        return False  
 
     def export_pdf(self):
         default_name = self.base_title.replace('.fountain', '') + ".pdf"
@@ -344,9 +347,16 @@ class MainWindow(QMainWindow):
             return
 
         try:
+            # 1. İmleci gizle
             if self.workspace.cursor_item:
-                self.workspace.cursor_timer.stop()
                 self.workspace.cursor_item.setVisible(False)
+                
+            # 2. Seçimi tamamen iptal et ve sahnedeki renkleri anında temizle
+            cursor = self.workspace.hidden_editor.textCursor()
+            cursor.clearSelection()
+            self.workspace.hidden_editor.setTextCursor(cursor)
+            self.workspace.update_selection_highlights()
+            QApplication.processEvents() # Tüm silme işlemlerinin render edildiğinden emin ol
 
             printer = QPrinter(QPrinter.PrinterMode.HighResolution)
             printer.setOutputFormat(QPrinter.OutputFormat.PdfFormat)
@@ -363,7 +373,7 @@ class MainWindow(QMainWindow):
             engine = self.workspace.engine
             page_height = engine.page_height
             page_width = engine.page_width
-            spacing = 50 
+            spacing = 50  
             
             full_text = self.workspace.title_text + self.workspace.raw_text
             pages = engine.paginate_text(full_text)
@@ -371,7 +381,7 @@ class MainWindow(QMainWindow):
 
             for i in range(total_pages):
                 if i > 0:
-                    printer.newPage() 
+                    printer.newPage()  
                     
                 y_offset = i * (page_height + spacing)
                 source_rect = QRectF(0, y_offset, page_width, page_height)
@@ -382,6 +392,7 @@ class MainWindow(QMainWindow):
 
             painter.end()
 
+            # 3. İşlem bittikten sonra imleci geri aç (seçimi getirme)
             if self.workspace.cursor_item:
                 self.workspace.cursor_item.setVisible(True)
                 self.workspace.cursor_timer.start(500)
@@ -393,7 +404,7 @@ class MainWindow(QMainWindow):
                 self.workspace.cursor_item.setVisible(True)
                 self.workspace.cursor_timer.start(500)
                 
-            QMessageBox.critical(self, "Hata", f"PDF oluşturulurken bir hata meydana geldi:\n{str(e)}") 
+            QMessageBox.critical(self, "Hata", f"PDF oluşturulurken bir hata meydana geldi:\n{str(e)}")  
 
     def open_schema_board(self, project_path):
         self.schema_editor.load_schema(project_path)

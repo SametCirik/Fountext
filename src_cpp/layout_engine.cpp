@@ -1,3 +1,4 @@
+#include <cmath>
 #include "layout_engine.hpp"
 #include <sstream>
 #include <algorithm>
@@ -364,4 +365,69 @@ std::vector<float> LayoutEngine::calculate_cursor_position(const std::string& fu
     // YENİ: BlockType'ı float'a çevirip 4. eleman olarak yolluyoruz
     float block_type_float = static_cast<float>(target_block->type);
     return {cx, cy, abs_y, block_type_float};
+}
+int LayoutEngine::calculate_index_from_position(const std::string& full_text, float x, float y) {
+    if (full_text.empty()) return 0;
+    auto pages = paginate_text(full_text);
+    if (pages.empty()) return 0;
+
+    float page_total_h = page_height + 50.0f;
+    int target_page_idx = static_cast<int>(y / page_total_h);
+    if (target_page_idx < 0) target_page_idx = 0;
+    if (target_page_idx >= pages.size()) target_page_idx = pages.size() - 1;
+
+    float rel_y = y - (target_page_idx * page_total_h);
+    auto& page = pages[target_page_idx];
+
+    if (page.blocks.empty()) {
+        if (target_page_idx == 0) return 0;
+        return full_text.length();
+    }
+
+    if (rel_y < page.blocks.front().y) {
+        return page.blocks.front().source_start;
+    }
+
+    for (size_t b_idx = 0; b_idx < page.blocks.size(); ++b_idx) {
+        auto& block = page.blocks[b_idx];
+        if (rel_y >= block.y && rel_y <= block.y + block.height) {
+            int line_idx = static_cast<int>((rel_y - block.y) / line_spacing);
+            if (line_idx < 0) line_idx = 0;
+            if (line_idx >= block.wrapped_lines.size()) line_idx = block.wrapped_lines.size() - 1;
+
+            float rel_x = x - block.x;
+            int char_idx = 0;
+            if (rel_x > 0) {
+                char_idx = static_cast<int>((rel_x + (char_width * 0.5f)) / char_width);
+            }
+
+            int byte_offset = 0;
+            for (int i = 0; i < line_idx; i++) {
+                byte_offset += block.wrapped_lines[i].length();
+            }
+
+            std::string target_line = block.wrapped_lines[line_idx];
+            int line_byte_pos = 0;
+            int utf8_count = 0;
+            while (line_byte_pos < target_line.length() && utf8_count < char_idx) {
+                int char_len = 1;
+                unsigned char c = target_line[line_byte_pos];
+                if ((c & 0xE0) == 0xC0) char_len = 2;
+                else if ((c & 0xF0) == 0xE0) char_len = 3;
+                else if ((c & 0xF8) == 0xF0) char_len = 4;
+                line_byte_pos += char_len;
+                utf8_count++;
+            }
+
+            return block.source_start + byte_offset + line_byte_pos;
+        }
+
+        if (b_idx < page.blocks.size() - 1) {
+            auto& next_block = page.blocks[b_idx + 1];
+            if (rel_y > block.y + block.height && rel_y < next_block.y) {
+                return block.source_start + block.source_length;
+            }
+        }
+    }
+    return page.blocks.back().source_start + page.blocks.back().source_length;
 }

@@ -9,7 +9,6 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
 from PyQt6.QtGui import QPixmap, QCursor
 from PyQt6.QtCore import Qt, pyqtSignal
 from lang_controller import LanguageController, tr
-from lang_controller import LanguageController, tr
 
 class ClickableLabel(QLabel):
     clicked = pyqtSignal()
@@ -285,7 +284,7 @@ class ProjectDashboard(QWidget):
                 QMessageBox.warning(self, "Hata", "Bu isimde bir bölüm zaten var!")
                 return
                 
-            template = f"Title: {clean_name}\nCredit: Yazan\nAuthor: [İsim Soyisim]\n\n[Buradan yazmaya başlayın...]"
+            template = f"Title: {clean_name}\nCredit: {tr(tp_default_credit)}\nAuthor: {tr(tp_default_author)}\n\n{tr(proj_start_writing)}"
             
             with open(new_file_path, 'w', encoding='utf-8') as f:
                 f.write(template)

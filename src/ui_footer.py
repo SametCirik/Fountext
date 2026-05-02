@@ -1,8 +1,8 @@
 from PyQt6.QtWidgets import QStatusBar, QLabel, QSlider, QWidget, QHBoxLayout
 from PyQt6.QtCore import Qt, pyqtSignal
+from lang_controller import LanguageController, tr
 
 class EditorFooterBar(QStatusBar):
-    # Zoom değiştiğinde fırlatılacak özel sinyal
     zoom_requested = pyqtSignal(int)
 
     def __init__(self, main_window, editor):
@@ -10,7 +10,6 @@ class EditorFooterBar(QStatusBar):
         self.main_window = main_window
         self.editor = editor
         
-        # Değerleri hafızada tutuyoruz
         self.current_page = 1
         self.total_pages = 1
         self.total_chars = 0
@@ -19,9 +18,8 @@ class EditorFooterBar(QStatusBar):
         self.save_status_label.setStyleSheet("color: #4CAF50; font-weight: bold; font-size: 14px;")
         self.addWidget(self.save_status_label)
         
-        # Başlangıç görünümü
-        self.page_label = QLabel(" Sayfa: 1/1 ")
-        self.char_label = QLabel(" | Karakter: 0 ")
+        self.page_label = QLabel(f" {tr('footer_page')}: 1/1 ")
+        self.char_label = QLabel(f" | {tr('footer_char')}: 0 ")
         
         self.addWidget(self.page_label)
         self.addWidget(self.char_label)
@@ -36,15 +34,16 @@ class EditorFooterBar(QStatusBar):
         self.zoom_slider.setValue(100)
         self.zoom_slider.setFixedWidth(150)
         
-        # Slider değiştiğinde fonksiyonu tetikle
         self.zoom_slider.valueChanged.connect(self._on_zoom_changed)
         
         self.right_layout.addWidget(self.zoom_label)
         self.right_layout.addWidget(self.zoom_slider)
         
         self.addPermanentWidget(self.right_widget)
+        
+        # Dil değiştiğinde etiketleri yenile
+        LanguageController().language_changed.connect(self.update_texts)
 
-    # YENİ: Artık sadece değişen verileri güncelleyen akıllı bir fonksiyon
     def update_stats(self, current_page=None, total_pages=None, total_chars=None):
         if current_page is not None:
             self.current_page = current_page
@@ -53,8 +52,12 @@ class EditorFooterBar(QStatusBar):
         if total_chars is not None:
             self.total_chars = total_chars
             
-        self.page_label.setText(f" Sayfa: {self.current_page}/{self.total_pages} ")
-        self.char_label.setText(f" | Karakter: {self.total_chars} ")
+        self.page_label.setText(f" {tr('footer_page')}: {self.current_page}/{self.total_pages} ")
+        self.char_label.setText(f" | {tr('footer_char')}: {self.total_chars} ")
+
+    def update_texts(self):
+        # Sadece istatistik fonksiyonunu çağırarak metinleri güncel dille yeniden yazdırıyoruz
+        self.update_stats()
 
     def set_saved_status(self, is_saved):
         if is_saved:

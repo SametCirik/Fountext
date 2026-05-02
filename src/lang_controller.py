@@ -43,7 +43,7 @@ class LanguageController(QObject):
 
     def load_locales(self):
         locales_dir = os.path.join(os.path.dirname(__file__), "locales")
-        for lang_code in ["tr", "en"]:
+        for lang_code in ["tr", "en", "es", "fr", "ru"]:
             file_path = os.path.join(locales_dir, f"{lang_code}.json")
             if os.path.exists(file_path):
                 with open(file_path, "r", encoding="utf-8") as f:
@@ -58,7 +58,12 @@ class LanguageController(QObject):
             self.language_changed.emit()
 
     def toggle_language(self):
-        new_lang = "en" if self.current_lang == "tr" else "tr"
+        lang_list = ["tr", "en", "es", "fr", "ru"]
+        try:
+            current_idx = lang_list.index(self.current_lang)
+        except ValueError:
+            current_idx = 0
+        new_lang = lang_list[(current_idx + 1) % len(lang_list)]
         self.set_language(new_lang)
 
     def get(self, key, default=""):

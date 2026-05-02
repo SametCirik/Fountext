@@ -48,5 +48,6 @@ PYBIND11_MODULE(fountext_engine, m) {
         .def_readwrite("char_width", &LayoutEngine::char_width)
         .def_readwrite("line_spacing", &LayoutEngine::line_spacing) // YENİ
         .def("paginate_text", &LayoutEngine::paginate_text)
-        .def("calculate_cursor_position", &LayoutEngine::calculate_cursor_position); // GÜNCELLENDİ
+        .def("calculate_cursor_position", &LayoutEngine::calculate_cursor_position)
+        .def("calculate_index_from_position", &LayoutEngine::calculate_index_from_position); // GÜNCELLENDİ
 }
