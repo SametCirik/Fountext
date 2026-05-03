@@ -17,10 +17,14 @@ Categories=Office;TextEditor;
 StartupWMClass=Fountext-Editor
 INI
 
+# İŞTE BURASI: Klasörün içine de şık logolu taşınabilir bir kısayol bırakalım!
+cp ~/.local/share/applications/Fountext-Editor.desktop "$DIR/Fountext-Başlatıcı.desktop"
+chmod +x "$DIR/Fountext-Başlatıcı.desktop"
+
 kbuildsycoca5 &> /dev/null || kbuildsycoca6 &> /dev/null || update-desktop-database ~/.local/share/applications/ &> /dev/null || true
 
 echo ""
 echo "Kurulum tamamlandı!"
-echo "Lütfen 'Fountext' uygulamasını başlat menüsünden aratıp çalıştırın."
+echo "Uygulamanızı başlat menüsünden veya bu klasörde yeni oluşan 'Fountext-Başlatıcı' kısayolundan açabilirsiniz."
 echo ""
 read -p "Çıkmak için Enter'a basın..."
