@@ -15,7 +15,7 @@
 </p>
 
 <h1 align="center">
-  Linux için Fountext Metin Senaryosu Editörü
+  Linux için Fountext Senaryo Editörü
 </h1>
 
 <p align="center">
