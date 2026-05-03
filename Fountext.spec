@@ -5,7 +5,7 @@ a = Analysis(
     ['src/main.py'],
     pathex=[],
     binaries=[],
-    datas=[('src/locales', 'src/locales'), ('assets', 'assets'), ('src/fountext_engine*.so', 'src')],
+    datas=[('src/fountext_engine*.so', 'src')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

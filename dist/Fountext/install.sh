@@ -1,7 +1,7 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-echo "Fountext KDE/Wayland için sisteme entegre ediliyor..."
+echo "Integrating Fountext into the system (KDE/Wayland/App Menu)..."
 
 mkdir -p ~/.local/share/applications/
 cat << INI > ~/.local/share/applications/Fountext-Editor.desktop
@@ -17,14 +17,14 @@ Categories=Office;TextEditor;
 StartupWMClass=Fountext-Editor
 INI
 
-# İŞTE BURASI: Klasörün içine de şık logolu taşınabilir bir kısayol bırakalım!
-cp ~/.local/share/applications/Fountext-Editor.desktop "$DIR/Fountext-Başlatıcı.desktop"
-chmod +x "$DIR/Fountext-Başlatıcı.desktop"
+# Klasör içi Fountext-Launcher kısayolunu oluşturalım
+cp ~/.local/share/applications/Fountext-Editor.desktop "$DIR/Fountext-Launcher.desktop"
+chmod +x "$DIR/Fountext-Launcher.desktop"
 
 kbuildsycoca5 &> /dev/null || kbuildsycoca6 &> /dev/null || update-desktop-database ~/.local/share/applications/ &> /dev/null || true
 
 echo ""
-echo "Kurulum tamamlandı!"
-echo "Uygulamanızı başlat menüsünden veya bu klasörde yeni oluşan 'Fountext-Başlatıcı' kısayolundan açabilirsiniz."
+echo "Installation complete!"
+echo "You can now launch Fountext from your App Menu, or use the new 'Fountext-Launcher' shortcut in this folder."
 echo ""
-read -p "Çıkmak için Enter'a basın..."
+read -p "Press Enter to exit..."
