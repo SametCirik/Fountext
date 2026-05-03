@@ -413,6 +413,11 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     from PyQt6.QtGui import QIcon
+    import os
+    if getattr(sys, "frozen", False):
+        os.chdir(os.path.dirname(sys.executable))
+    else:
+        os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     app.setDesktopFileName("Fountext-Editor")
     app.setWindowIcon(QIcon(os.path.abspath("Fountext_Logo.png")))
     
