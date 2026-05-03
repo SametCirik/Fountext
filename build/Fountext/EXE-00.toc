@@ -49,7 +49,7 @@
  [],
  False,
  False,
- 1777689718,
+ 1777772908,
  [('run',
    '/home/smtc/Codes/Fountext/venv/lib/python3.14/site-packages/PyInstaller/bootloader/Linux-64bit-intel/run',
    'EXECUTABLE')],
