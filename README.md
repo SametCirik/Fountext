@@ -63,22 +63,31 @@ Fountext is a modern, lightweight, and powerful screenwriting editor that fully 
    - Click on the latest release (currently **v1.2**)
    - Download the `Fountext-v1.2-Linux.tar.gz` file
 
-3. **Extract and Run**
-   ```bash
+3. **Extract the Archive**
+
+   \```bash
    # Extract the archive
    tar -xzf Fountext-v1.2-Linux.tar.gz
    
    # Navigate to the directory
    cd Fountext
-   
-   # Make the binary executable (if needed)
-   chmod +x Fountext
-   
-   # Run the application
-   ./Fountext
-   ```
+   \```
 
-That's it! The pre-built binary includes all dependencies and is ready to use.
+4. **Choose How to Run:**
+
+   - **A. Portable Mode (Run Directly)**
+     You can run Fountext immediately without installing anything. Just double-click the `Fountext` executable file in the folder, or run it via terminal:
+     \```bash
+     ./Fountext
+     \```
+     *(Note: In portable mode, your desktop environment might not display the application logo on the taskbar depending on your OS/Wayland settings).*
+
+   - **B. System Integration Mode (Recommended for KDE/Wayland)**
+     If you want the Fountext logo to appear correctly on your taskbar and want to find Fountext in your system's Application/Office Menu, run the installation script:
+     \```bash
+     ./install.sh
+     \```
+     This will safely integrate Fountext into your system. It will also create a handy `Fountext.desktop` shortcut right inside the folder for easy access!
 
 ### Option 2: Build from Source
 
@@ -93,29 +102,33 @@ That's it! The pre-built binary includes all dependencies and is ready to use.
 #### Installation Steps
 
 1. **Clone the Repository**
-   ```bash
+
+   \```bash
    git clone https://github.com/SametCirik/Fountext-Screenwriting-Editor.git
    cd Fountext-Screenwriting-Editor
-   ```
+   \```
 
 2. **Install Python Dependencies**
-   ```bash
+
+   \```bash
    pip install -r requirements.txt
-   ```
+   \```
 
 3. **Build the C++ Layout Engine**
-   ```bash
+
+   \```bash
    mkdir build
    cd build
    cmake ..
    make
    cd ..
-   ```
+   \```
 
 4. **Run the Application**
-   ```bash
+
+   \```bash
    python src/main.py
-   ```
+   \```
 
 ---
 
