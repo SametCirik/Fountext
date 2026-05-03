@@ -419,6 +419,7 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
     from PyQt6.QtGui import QIcon
+    app.setDesktopFileName("Fountext-Editor")
     app.setWindowIcon(QIcon(os.path.abspath("Fountext_Logo.png")))
     
     QFontDatabase.addApplicationFont("assets/fonts/CourierPrime-Regular.ttf")
