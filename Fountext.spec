@@ -5,7 +5,7 @@ a = Analysis(
     ['src/main.py'],
     pathex=[],
     binaries=[],
-    datas=[('assets', 'assets'), ('guide_TR.fountain', '.'), ('guide_EN.fountain', '.')],
+    datas=[('src/locales', 'src/locales'), ('assets', 'assets'), ('src/fountext_engine*.so', 'src')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -32,6 +32,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['Fountext_Logo.ico'],
 )
 coll = COLLECT(
     exe,

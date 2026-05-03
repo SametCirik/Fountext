@@ -412,6 +412,8 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    from PyQt6.QtGui import QIcon
+    app.setWindowIcon(QIcon("Fountext_Logo.png"))
     
     QFontDatabase.addApplicationFont("assets/fonts/CourierPrime-Regular.ttf")
     QFontDatabase.addApplicationFont("assets/fonts/CourierPrime-Bold.ttf")
