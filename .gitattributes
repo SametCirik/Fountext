@@ -1,4 +1,2 @@
-*.fxml linguist-detectable=true
-
 *.html linguist-vendored
 *.tex linguist-vendored
