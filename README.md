@@ -8,6 +8,12 @@
   </a>
 </p>
 
+---
+
+<p align="center">
+    <img width="256" height="256" alt="Fountext_Logo" src="https://github.com/user-attachments/assets/70247045-03b1-4133-8ced-a6de23d3e82f" />
+</p>
+
 <h1 align="center">
   Fountext Screenwriting Editor for Linux
 </h1>
