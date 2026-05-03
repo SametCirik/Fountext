@@ -411,9 +411,15 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentIndex(3)
 
 if __name__ == "__main__":
+    import os
+    if getattr(sys, "frozen", False):
+        os.chdir(os.path.dirname(sys.executable))
+    else:
+        os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
     app = QApplication(sys.argv)
     from PyQt6.QtGui import QIcon
-    app.setWindowIcon(QIcon("Fountext_Logo.png"))
+    app.setWindowIcon(QIcon(os.path.abspath("Fountext_Logo.png")))
     
     QFontDatabase.addApplicationFont("assets/fonts/CourierPrime-Regular.ttf")
     QFontDatabase.addApplicationFont("assets/fonts/CourierPrime-Bold.ttf")
