@@ -65,28 +65,31 @@ Fountext is a modern, lightweight, and powerful screenwriting editor that fully 
 
 3. **Extract the Archive**
 
-   \```bash
+   ```bash
    # Extract the archive
    tar -xzf Fountext-v1.2-Linux.tar.gz
    
    # Navigate to the directory
    cd Fountext
-   \```
+   ```
 
 4. **Choose How to Run:**
 
    - **A. Portable Mode (Run Directly)**
      You can run Fountext immediately without installing anything. Just double-click the `Fountext` executable file in the folder, or run it via terminal:
-     \```bash
+
+     ```bash
      ./Fountext
-     \```
+     ```
      *(Note: In portable mode, your desktop environment might not display the application logo on the taskbar depending on your OS/Wayland settings).*
 
    - **B. System Integration Mode (Recommended for KDE/Wayland)**
      If you want the Fountext logo to appear correctly on your taskbar and want to find Fountext in your system's Application/Office Menu, run the installation script:
-     \```bash
+
+     ```bash
      ./install.sh
-     \```
+     ```
+
      This will safely integrate Fountext into your system. It will also create a handy `Fountext.desktop` shortcut right inside the folder for easy access!
 
 ### Option 2: Build from Source
@@ -103,32 +106,32 @@ Fountext is a modern, lightweight, and powerful screenwriting editor that fully 
 
 1. **Clone the Repository**
 
-   \```bash
+   ```bash
    git clone https://github.com/SametCirik/Fountext-Screenwriting-Editor.git
    cd Fountext-Screenwriting-Editor
-   \```
+   ```
 
 2. **Install Python Dependencies**
 
-   \```bash
+   ```bash
    pip install -r requirements.txt
-   \```
+   ```
 
 3. **Build the C++ Layout Engine**
 
-   \```bash
+   ```bash
    mkdir build
    cd build
    cmake ..
    make
    cd ..
-   \```
+   ```
 
 4. **Run the Application**
 
-   \```bash
+   ```bash
    python src/main.py
-   \```
+   ```
 
 ---
 
@@ -142,12 +145,14 @@ We welcome contributions! Here's how to get started:
    - This creates a copy of the repository under your GitHub account
 
 2. **Clone Your Fork**
+
    ```bash
    git clone https://github.com/YOUR_USERNAME/Fountext-Screenwriting-Editor.git
    cd Fountext-Screenwriting-Editor
    ```
 
 3. **Create a Branch for Your Changes**
+
    ```bash
    git checkout -b feature/your-feature-name
    # or
@@ -155,12 +160,14 @@ We welcome contributions! Here's how to get started:
    ```
 
 4. **Make Your Changes and Commit**
+
    ```bash
    git add .
    git commit -m "Clear description of your changes"
    ```
 
 5. **Push to Your Fork**
+
    ```bash
    git push origin feature/your-feature-name
    ```
